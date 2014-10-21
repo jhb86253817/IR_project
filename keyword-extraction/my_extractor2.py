@@ -88,10 +88,10 @@ class keywordExtractor():
         """extract top n keywords based on their TFIDF value and store them in self.keywords."""
         for i in range(len(self.tfidf)):
             keywords = sorted(self.tfidf[i].items(), key=itemgetter(1), reverse=True)[:n]
-            keywords = [k for k,v in keywords if k in self.title_phrase[i] ]
+            #keywords = [k for k,v in keywords if k in self.title_phrase[i] ]
             self.keywords.append(keywords)
         for l in self.keywords:
-            print l
+            print [ll[0] for ll in l]
             print '\n'
 
 if __name__ == '__main__':

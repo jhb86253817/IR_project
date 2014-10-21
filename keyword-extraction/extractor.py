@@ -6,38 +6,17 @@ Currently, it includes getting information from
 2. 70k abstracts of paper from arxiv
 """
 
-
 from __future__ import division
-#from lxml import etree
-from os import path
-from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 from nltk import word_tokenize
-from string import printable
 
-import functools
 import operator
 import nltk
 import string
 import pickle
 
 import MySQLdb as mdb
-
-def isPunct(word):
-    return len(word) == 1 and word in string.punctuation
-
-def isNumeric(word):
-    try:
-        float(word) if '.' in word else int(word)
-        return True
-    except ValueError:
-        return False
-
-def listify(f):
-    @functools.wraps(f)
-    def listify_helper(*args, **kwargs):
-        return list(f(*args, **kwargs))
-    return listify_helper
+from gensim import corpora, models, similarities
 
 class PhraseExtractor():
     def __init__(self):
@@ -99,33 +78,37 @@ class PhraseExtractor():
         terms = self.get_terms(tree)
         return terms
 
-
-if __name__ == "__main__":
-    #import os
-    #import glob
-    #files =  glob.glob(os.getcwd()+"/*.txt")
-    #for file in files:
-    #    with open(file, 'r') as f:
-    #        text = f.read()
-    #    text = filter(lambda x: x in printable, text)
-    #    e = PhraseExtractor()
-    #    terms = e.extract(text)
-    #    print [' '.join(t) for t in terms]
-    #text = "reinforcement learning you you you cat cat cat dog"
-    #e = PhraseExtractor()
-    #terms = e.extract(text)
-    #print [' '.join(t) for t in terms]
-    titles = []
+def get_phrases():
+    """use PhraseExtractor to get phrase from abstracts."""
+    abstracts = []
+    terms = []
     con = mdb.connect('localhost', 'root', 'jhb196635', 'keyword_app')
     with con:
         cur = con.cursor()
-        #get titles
-        cur.execute("select Title from Abstracts")
+        #get abstracts
+        cur.execute("select Abstract from Abstracts")
         for i in range(int(cur.rowcount)):
-            titles.append(str(cur.fetchone()))
-    for text in titles:
-        text = filter(lambda x: x in printable, text)
-        e = PhraseExtractor()
-        terms = e.extract(text)
-        print [' '.join(t) for t in terms]
+            abstracts.append(str(cur.fetchone()))
+    e = PhraseExtractor()
+    for text in abstracts:
+        term = e.extract(text)
+        terms.append([' '.join(t) for t in term if len(t)>2][1:-1])
+
+    #remove term with one word
+    #terms = [[term for term in t if len(term)>1] for t in terms]
+    return terms
+
+
+
+if __name__ == "__main__":
+    terms = get_phrases()
+    dictionary = corpora.Dictionary(terms)
+    corpus = [dictionary.doc2bow(term) for term in terms]
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus]
+    sorted_corpus_tfidf = [sorted(c, key=lambda item: item[1], reverse=True) for c in corpus_tfidf]
+    sorted_keywords = [[dictionary[k] for k,v in c] for c in sorted_corpus_tfidf]
+    for k in sorted_keywords:
+        print k
+    
 

@@ -2,7 +2,7 @@
 
 """
 This class extracts keywords from given documents based on TFIDF.
-The extractor is tested on the abstracts in database keyword_app.
+The extractor is tested on the preprocessedabstracts in database keyword_app.
 """
 
 from __future__ import division
@@ -28,22 +28,16 @@ class keywordExtractor():
         con = mdb.connect('localhost', 'root', 'jhb196635', 'keyword_app')
         with con:
             cur = con.cursor()
-            cur.execute("select Abstract from Abstracts")
+            cur.execute("select Abstract from PreprocessedAbstracts")
             for i in range(int(cur.rowcount)):
-                self.abstracts.append(str(cur.fetchone()))
+                self.abstracts.append(str(cur.fetchone())[2:-3])
 
     def preprocess(self):
         """preprocess the text in self.abstracts, which means split them and get rid of meaningless words."""
-        tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+')
-        #stemmer = nltk.PorterStemmer()
         for a in self.abstracts:
-            token_words = tokenizer.tokenize(a)
-            token_words = [w.lower() for w in token_words]
-            token_words = [w for w in token_words if w not in self.stopwords and len(w) > 2]
-            #token_words = [stemmer.stem(w) for w in token_words]
-            #bigrams = nltk.bigrams(token_words)
-            #bigrams_words = [' '.join((x,y)) for x,y in bigrams]
+            token_words = a.split(',')
             self.words.append(token_words)
+
 
     def compute_idf(self):
         """calculate the inverse document frequency for all the words."""
