@@ -82,17 +82,17 @@ def get_phrases():
     """use PhraseExtractor to get phrase from abstracts."""
     abstracts = []
     terms = []
-    con = mdb.connect('localhost', 'root', 'jhb196635', 'keyword_app')
+    con = mdb.connect('localhost', 'root', 'jhb196635', 'Articles')
     with con:
         cur = con.cursor()
         #get abstracts
-        cur.execute("select Abstract from Abstracts")
+        cur.execute("select Title from Abstracts where ID<30")
         for i in range(int(cur.rowcount)):
             abstracts.append(str(cur.fetchone()))
     e = PhraseExtractor()
     for text in abstracts:
         term = e.extract(text)
-        terms.append([' '.join(t) for t in term if len(t)>2][1:-1])
+        terms.append([' '.join(t) for t in term if len(t)>1][1:-1])
 
     #remove term with one word
     #terms = [[term for term in t if len(term)>1] for t in terms]
@@ -102,13 +102,15 @@ def get_phrases():
 
 if __name__ == "__main__":
     terms = get_phrases()
-    dictionary = corpora.Dictionary(terms)
-    corpus = [dictionary.doc2bow(term) for term in terms]
-    tfidf = models.TfidfModel(corpus)
-    corpus_tfidf = tfidf[corpus]
-    sorted_corpus_tfidf = [sorted(c, key=lambda item: item[1], reverse=True) for c in corpus_tfidf]
-    sorted_keywords = [[dictionary[k] for k,v in c] for c in sorted_corpus_tfidf]
-    for k in sorted_keywords:
-        print k
+    #dictionary = corpora.Dictionary(terms)
+    #corpus = [dictionary.doc2bow(term) for term in terms]
+    #tfidf = models.TfidfModel(corpus)
+    #corpus_tfidf = tfidf[corpus]
+    #sorted_corpus_tfidf = [sorted(c, key=lambda item: item[1], reverse=True) for c in corpus_tfidf]
+    #sorted_keywords = [[dictionary[k] for k,v in c] for c in sorted_corpus_tfidf]
+    #for i in range(20):
+    #    print sorted_keywords[i][:5]
+    for i in range(len(terms)):
+        print i+1, terms[i] 
     
 
