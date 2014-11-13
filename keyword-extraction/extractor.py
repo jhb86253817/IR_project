@@ -56,6 +56,7 @@ class PhraseExtractor():
             | \.\.\.                # ellipsis
             | [][.,;"'?():-_`]      # these are separate tokensconverseur
         '''
+        sentence_re2 = r"\w+"
     
         #Taken from Su Nam Kim Paper...
         grammar = r"""
@@ -86,7 +87,7 @@ def get_phrases():
     with con:
         cur = con.cursor()
         #get abstracts
-        cur.execute("select Title from Abstracts where ID<30")
+        cur.execute("select Abstract from Abstracts where ID<10")
         for i in range(int(cur.rowcount)):
             abstracts.append(str(cur.fetchone()))
     e = PhraseExtractor()

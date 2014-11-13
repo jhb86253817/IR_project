@@ -13,7 +13,7 @@ def read_data():
     con = mdb.connect('localhost', 'root', 'jhb196635', 'Articles')
     with con:
         cur = con.cursor()
-        cur.execute("select Abstract from Abstracts where ID<= 7000")
+        cur.execute("select Abstract from Abstracts where ID<= 10")
         for i in range(int(cur.rowcount)):
             texts.append(str(cur.fetchone()).replace('\\n',' '))
 
@@ -27,12 +27,12 @@ def extract(texts):
         count += 1
         if count % 100 == 0: print count
         phrase = e.extract(text)
-        phrase = [' '.join(p) for p in phrase if len(p)>1]
+        phrase = [' '.join(p).replace('-',' ') for p in phrase if len(p)>1]
         phrase = list(set(phrase))
         phrases.append(phrase)
 
     phrases_string = json.dumps(phrases)
-    with open('phrases-json', 'wb') as f:
+    with open('phrases2-json', 'wb') as f:
         f.write(phrases_string)
 
 def load_data():
